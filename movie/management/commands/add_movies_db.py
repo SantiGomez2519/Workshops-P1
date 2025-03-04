@@ -7,6 +7,7 @@ class Command(BaseCommand):
     help = 'Load movies from movie_descriptions.json into the Movie model'
 
     def handle(self, *args, **kwargs):
+        print("Command")
         # Construct the full path to the JSON file
         #Recuerde que la consola está ubicada en la carpeta DjangoProjectBase.
         #El path del archivo movie_descriptions con respecto a DjangoProjectBase sería la carpeta anterior
@@ -32,10 +33,11 @@ class Command(BaseCommand):
             else:
                 try:
                     exist.title = movie["title"]
-                    exist.image = 'movie/images/default.jpg'
+                    exist.image = 'movie/images/default2.jpg'
                     exist.genre = movie["genre"]
                     exist.year = movie["year"]
                     exist.description = movie["plot"]
+                    exist.save()
                 except:
                     pass
         #self.stdout.write(self.style.SUCCESS(f'Successfully added {cont} products to the database'))
