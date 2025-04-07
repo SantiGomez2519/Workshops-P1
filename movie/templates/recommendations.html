@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form method="post" class="mb-3">
+    {% csrf_token %}
+    <div class="mb-3">
+        <h1><label for="prompt" class="form-label">Sistema de recomendaciones</label></h1>
+        <textarea id="prompt" name="prompt" rows="4" cols="50" class="form-control" placeholder="Describe la película que buscas..."></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Recomendar</button>
+</form>
+
+{% if movie %}
+    <h2 class="mt-4">Película Recomendada:</h2>
+    <div class="card mb-3" style="max-width: 300px;">
+        <div class="card-body"></div>
+            <img src="{{ movie.image.url }}" class="card-img-top" alt="...">
+            <h3 class="card-title">{{ movie.title }}</h3>
+            <p class="card-text">{{ movie.description }}</p>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -8,6 +8,11 @@ import matplotlib
 import io
 import urllib, base64
 
+import os
+from openai import OpenAI
+import numpy as np
+from dotenv import load_dotenv
+
 # Create your views here.
 def home(request):
     # return HttpResponse('<h1>Welcome to Home Page</h1>')
@@ -92,3 +97,41 @@ def statistics_view(request):
 def signup(request):
     email = request.GET.get('email')
     return render(request, 'signup.html', {'email': email})
+
+def recommendations(request):
+    if request.method == 'POST':
+        # Recoger el prompt ingresado por el usuario desde el formulario
+        prompt = request.POST.get('prompt')
+        if not prompt:
+            return render(request, 'recommendations.html', {'error': "No se proporcionó descripción", 'movie': None})
+
+        # Cargar la API Key
+        load_dotenv('./api_keys.env')
+        client = OpenAI(api_key=os.environ.get('openai_api_key'))
+
+        # Función para calcular similitud de coseno
+        def cosine_similarity(a, b):
+            return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+        # Generar embedding del prompt
+        response = client.embeddings.create(
+            input=[prompt],
+            model="text-embedding-3-small"
+        )
+        prompt_emb = np.array(response.data[0].embedding, dtype=np.float32)
+
+        # Recorrer la base de datos y calcular la similitud para encontrar la mejor coincidencia
+        best_movie = None
+        max_similarity = -1
+        for movie in Movie.objects.all():
+            movie_emb = np.frombuffer(movie.emb, dtype=np.float32)
+            similarity = cosine_similarity(prompt_emb, movie_emb)
+            if similarity > max_similarity:
+                max_similarity = similarity
+                best_movie = movie
+
+        # Retornar la película recomendada a la plantilla
+        return render(request, 'recommendations.html', {'movie': best_movie, 'prompt': prompt})
+    else:
+        # Mostrar el formulario para que el usuario ingrese un prompt
+        return render(request, 'recommendations.html')
